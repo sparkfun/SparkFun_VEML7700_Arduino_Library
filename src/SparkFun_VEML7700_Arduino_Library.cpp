@@ -32,6 +32,19 @@ const float VEML7700_LUX_RESOLUTION[VEML7700_NUM_GAIN_SETTINGS][VEML7700_NUM_INT
   {0.9216, 0.4608, 0.2304, 0.1152, 0.0576, 0.0288}  // Gain (sensitivity) 1/4
 };
 
+const char *VEML7700_GAIN_SETTINGS[VEML7700_NUM_GAIN_SETTINGS + 1] =
+{
+  // Note: these are in the order define by ALS_SM and VEML7700_sensitivity_mode_t
+  "x1","x2","x1/8","x1/4","INVALID"
+};
+
+const char *VEML7700_INTEGRATION_TIMES[VEML7700_NUM_INTEGRATION_TIMES + 1] =
+{
+  // Note: these are in ascending (VEML7700_integration_time_t) order
+  //       _not_ in ALS_IT (VEML7700_config_integration_time_t) order
+  "25ms","50ms","100ms","200ms","400ms","800ms","INVALID"
+};
+
 VEML7700::VEML7700()
 {
   _i2cPort = NULL;
@@ -269,6 +282,15 @@ VEML7700_integration_time_t VEML7700::getIntegrationTime()
   return ((VEML7700_integration_time_t)integrationTimeFromConfig((VEML7700_config_integration_time_t)_configurationRegister.CONFIG_REG_IT));
 }
 
+const char * VEML7700::getIntegrationTimeStr()
+{
+  VEML7700_integration_time_t it;
+
+  getIntegrationTime(&it);
+
+  return (VEML7700_INTEGRATION_TIMES[it]);
+}
+
 VEML7700_error_t VEML7700::setSensitivityMode(VEML7700_sensitivity_mode_t sm)
 {
   VEML7700_error_t err;
@@ -313,6 +335,15 @@ VEML7700_sensitivity_mode_t VEML7700::getSensitivityMode()
   }
 
   return ((VEML7700_sensitivity_mode_t)_configurationRegister.CONFIG_REG_SM);
+}
+
+const char * VEML7700::getSensitivityModeStr()
+{
+  VEML7700_sensitivity_mode_t sm;
+
+  getSensitivityMode(&sm);
+
+  return (VEML7700_GAIN_SETTINGS[sm]);
 }
 
 VEML7700_error_t VEML7700::setHighThreshold(uint16_t threshold)
@@ -390,7 +421,7 @@ VEML7700_error_t VEML7700::getLux(float *lux)
   if (_debugEnabled)
   {
     _debugPort->print(F("VEML7700::getLux: gain / sensitivity: "));
-    _debugPort->println(sm);
+    _debugPort->println(VEML7700_GAIN_SETTINGS[sm]);
   }
 
   VEML7700_integration_time_t it;
@@ -403,7 +434,7 @@ VEML7700_error_t VEML7700::getLux(float *lux)
   if (_debugEnabled)
   {
     _debugPort->print(F("VEML7700::getLux: integration time: "));
-    _debugPort->println(it);
+    _debugPort->println(VEML7700_INTEGRATION_TIMES[it]);
   }
 
   // Now we can extract the correct resolution from the look up table.

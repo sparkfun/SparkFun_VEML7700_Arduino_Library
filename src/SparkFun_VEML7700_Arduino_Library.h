@@ -112,10 +112,12 @@ public:
   VEML7700_error_t setIntegrationTime(VEML7700_integration_time_t it);
   VEML7700_error_t getIntegrationTime(VEML7700_integration_time_t *it);
   VEML7700_integration_time_t getIntegrationTime();
+  const char * getIntegrationTimeStr();
 
   VEML7700_error_t setSensitivityMode(VEML7700_sensitivity_mode_t sm);
   VEML7700_error_t getSensitivityMode(VEML7700_sensitivity_mode_t *sm);
   VEML7700_sensitivity_mode_t getSensitivityMode();
+  const char * getSensitivityModeStr();
 
   VEML7700_error_t setHighThreshold(uint16_t threshold);
   VEML7700_error_t getHighThreshold(uint16_t *threshold);

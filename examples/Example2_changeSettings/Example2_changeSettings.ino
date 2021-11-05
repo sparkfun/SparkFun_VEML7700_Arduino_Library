@@ -1,12 +1,12 @@
 /*!
- * @file Example1_getLux.ino
+ * @file Example2_changeSettings.ino
  *
  * This example was written by:
  * Paul Clark
  * SparkFun Electronics
  * November 4th 2021
  * 
- * This example demonstrates how to initialize the VEML7700 and then get the ambient light lux.
+ * This example demonstrates how to change the VEML7700's sensitivity (gain) and integration time settings.
  * 
  * Want to support open source hardware? Buy a board from SparkFun!
  * <br>SparkX smôl Environmental Peripheral Board (SPX-18976): https://www.sparkfun.com/products/18976
@@ -36,6 +36,34 @@ void setup()
     while (1)
       ;
   }
+
+  //The default integration time is 100ms.
+  //Possible values are:
+  //VEML7700_INTEGRATION_25ms
+  //VEML7700_INTEGRATION_50ms
+  //VEML7700_INTEGRATION_100ms
+  //VEML7700_INTEGRATION_200ms
+  //VEML7700_INTEGRATION_400ms
+  //VEML7700_INTEGRATION_800ms
+  //Let's change the integration time to 50ms:
+  mySensor.setIntegrationTime(VEML7700_INTEGRATION_50ms);
+
+  //Confirm the integration time was set correctly
+  Serial.print(F("The sensor integration time is: "));
+  Serial.println(mySensor.getIntegrationTimeStr());
+
+  //The default gain (sensitivity mode) is x1
+  //Possible values are:
+  //VEML7700_SENSITIVITY_x1
+  //VEML7700_SENSITIVITY_x2
+  //VEML7700_SENSITIVITY_x1_8
+  //VEML7700_SENSITIVITY_x1_4
+  //Let's change the sensitivity to x2:
+  mySensor.setSensitivityMode(VEML7700_SENSITIVITY_x2);
+
+  //Confirm that the sensitivity mode was set correctly
+  Serial.print(F("The sensor gain (sensitivity mode) is: "));
+  Serial.println(mySensor.getSensitivityModeStr());
 
   Serial.println(F("Lux:"));
 }

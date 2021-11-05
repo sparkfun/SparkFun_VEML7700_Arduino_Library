@@ -34,8 +34,10 @@ setPersistenceProtect	KEYWORD2
 getPersistenceProtect	KEYWORD2
 setIntegrationTime	KEYWORD2
 getIntegrationTime	KEYWORD2
+getIntegrationTimeStr	KEYWORD2
 setSensitivityMode	KEYWORD2
 getSensitivityMode	KEYWORD2
+getSensitivityModeStr	KEYWORD2
 setHighThreshold	KEYWORD2
 getHighThreshold	KEYWORD2
 setLowThreshold	KEYWORD2
