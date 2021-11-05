@@ -1,5 +1,5 @@
 /*!
- * @file Example3_threshold.ino
+ * @file Example4_shutDown.ino
  *
  * This example was written by:
  * Paul Clark
