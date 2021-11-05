@@ -23,7 +23,7 @@ This library handles the initialization and configuration of the sensor, and mon
 
 ## Products That Use This Library
 
-* [SPX-18976](https://www.sparkfun.com/products/18976)- smôl Environmental Peripheral Board
+* [SPX-18976](https://www.sparkfun.com/products/18976) - smôl Environmental Peripheral Board
 * [SPX-18981](https://www.sparkfun.com/products/18981) - Ambient Light Sensor - VEML7700 (Qwiic)
 
 ## License Information
