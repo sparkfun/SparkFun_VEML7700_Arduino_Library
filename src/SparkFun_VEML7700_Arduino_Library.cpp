@@ -67,7 +67,7 @@ bool VEML7700::begin(TwoWire &wirePort)
   _configurationRegister.CONFIG_REG_SD = VEML7700_POWER_ON;
   _configurationRegister.CONFIG_REG_INT_EN = VEML7700_INT_DISABLE;
   _configurationRegister.CONFIG_REG_PERS = VEML7700_PERSISTENCE_1;
-  _configurationRegister.CONFIG_REG_IT = VEML7700_INTEGRATION_100ms;
+  _configurationRegister.CONFIG_REG_IT = (VEML7700_t)integrationTimeConfig(VEML7700_INTEGRATION_100ms);
   _configurationRegister.CONFIG_REG_SM = VEML7700_SENSITIVITY_x1;
 
   err = writeI2CRegister(_configurationRegister.all, VEML7700_CONFIGURATION_REGISTER);
