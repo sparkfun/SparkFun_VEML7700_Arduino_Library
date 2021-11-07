@@ -25,10 +25,10 @@
 
 typedef uint16_t VEML7700_t;
 
-//  VEML7700 I2C address
+/**  VEML7700 I2C address */
 #define VEML7700_I2C_ADDRESS 0x10
 
-// VEML7700 error code returns:
+/** VEML7700 error code returns */
 typedef enum
 {
   VEML7700_ERROR_READ = -4,
@@ -39,6 +39,7 @@ typedef enum
 } VEML7700_error_t;
 const VEML7700_error_t VEML7700_SUCCESS = VEML7700_ERROR_SUCCESS;
 
+/** Sensitivity mode selection */
 typedef enum
 {
   VEML7700_SENSITIVITY_x1,
@@ -48,6 +49,9 @@ typedef enum
   VEML7700_SENSITIVITY_INVALID
 } VEML7700_sensitivity_mode_t;
 
+/** ALS integration time setting
+    Note: these are defined here in simple sequential order.
+          The actual register settings are defined in VEML7700_config_integration_time_t */
 typedef enum
 {
   VEML7700_INTEGRATION_25ms,
@@ -59,6 +63,7 @@ typedef enum
   VEML7700_INTEGRATION_INVALID
 } VEML7700_integration_time_t;
 
+/** ALS persistence protect number setting */
 typedef enum
 {
   VEML7700_PERSISTENCE_1,
@@ -68,6 +73,7 @@ typedef enum
   VEML7700_PERSISTENCE_INVALID
 } VEML7700_persistence_protect_t;
 
+/** ALS interrupt enable setting */
 typedef enum
 {
   VEML7700_INT_DISABLE,
@@ -75,6 +81,17 @@ typedef enum
   VEML7700_INT_INVALID
 } VEML7700_interrupt_enable_t;
 
+/** ALS interrupt status, logical OR of the crossing low and high thrteshold INT triggers */
+typedef enum
+{
+  VEML7700_INT_STATUS_NONE,
+  VEML7700_INT_STATUS_HIGH,
+  VEML7700_INT_STATUS_LOW,
+  VEML7700_INT_STATUS_BOTH,
+  VEML7700_INT_STATUS_INVALID
+} VEML7700_interrupt_status_t;
+
+/** ALS shut down setting */
 typedef enum
 {
   VEML7700_POWER_ON,
@@ -82,20 +99,24 @@ typedef enum
   VEML7700_SHUTDOWN_INVALID
 } VEML7700_shutdown_t;
 
+/** Communication interface for the VEML7700 */
 class VEML7700
 {
 public:
-
+  /** @brief Class to communicate with the VEML7700 */
   VEML7700();
 
-  bool begin(TwoWire &wirePort = Wire); // Begin the VEML7700. Default to Wire
+  /** Begin the VEML7700. Default to Wire */
+  bool begin(TwoWire &wirePort = Wire);
 
+  /** Enable debug messages. Default to Serial */
   void enableDebugging(Stream &debugPort = Serial);
   void disableDebugging();
 
   bool isConnected();
 
-  // Configuration controls
+  /** Configuration controls */
+
   VEML7700_error_t setShutdown(VEML7700_shutdown_t);
   VEML7700_error_t powerOn() { return setShutdown(VEML7700_POWER_ON); };
   VEML7700_error_t shutdown() { return setShutdown(VEML7700_SHUT_DOWN); };
@@ -108,6 +129,7 @@ public:
   VEML7700_error_t setPersistenceProtect(VEML7700_persistence_protect_t pp);
   VEML7700_error_t getPersistenceProtect(VEML7700_persistence_protect_t *pp);
   VEML7700_persistence_protect_t getPersistenceProtect();
+  const char * getPersistenceProtectStr();
 
   VEML7700_error_t setIntegrationTime(VEML7700_integration_time_t it);
   VEML7700_error_t getIntegrationTime(VEML7700_integration_time_t *it);
@@ -127,6 +149,8 @@ public:
   VEML7700_error_t getLowThreshold(uint16_t *threshold);
   uint16_t getLowThreshold();
 
+  /** Read the sensor data */
+
   VEML7700_error_t getAmbientLight(uint16_t *ambient);
   uint16_t getAmbientLight();
 
@@ -136,17 +160,14 @@ public:
   VEML7700_error_t getLux(float *lux);
   float getLux();
 
-  VEML7700_error_t getHighInterruptStatus(bool *status);
-  bool getHighInterruptStatus();
-
-  VEML7700_error_t getLowInterruptStatus(bool *status);
-  bool getLowInterruptStatus();
-
-  VEML7700_error_t clearInterruptStatus();
+  /** Note: reading the interrupt status register clears the interrupts.
+            So, we need to check both interrupt flags in a single read. */
+  VEML7700_error_t getInterruptStatus(VEML7700_interrupt_status_t *status);
+  VEML7700_interrupt_status_t getInterruptStatus();
 
 private:
 
-  // VEML7700 registers:
+  /** Provide bit field access to the configuration register */
   typedef struct
   {
     union
@@ -165,9 +186,11 @@ private:
       };
     };
   } VEML7700_CONFIGURATION_REGISTER_t;
-
   VEML7700_CONFIGURATION_REGISTER_t _configurationRegister;
 
+  /** Provide bit field access to the interrupt status register
+      Note: reading the interrupt status register clears the interrupts.
+            So, we need to check both interrupt flags in a single read. */
   typedef struct
   {
     union
@@ -176,12 +199,14 @@ private:
       struct
       {
         VEML7700_t INT_STATUS_REG_RES : 14; // Reserved
-        VEML7700_t INT_STATUS_REG_TH_HIGH : 1; // High threshold exceeded
-        VEML7700_t INT_STATUS_REG_TH_LOW : 1; // Low threshold exceeded
+        // Bit 14 indicates if the high threshold was exceeded
+        // Bit 15 indicates if the low threshold was exceeded
+        VEML7700_t INT_STATUS_REG_INT_FLAGS : 2;
       };
     };
   } VEML7700_INTERRUPT_STATUS_REGISTER_t;
 
+  /** VEML7700 Registers */
   typedef enum
   {
     VEML7700_CONFIGURATION_REGISTER,
@@ -192,6 +217,7 @@ private:
     VEML7700_INTERRUPT_STATUS
   } VEML7700_registers_t;
 
+  /** ALS integration time setting */
   typedef enum
   {
     VEML7700_CONFIG_INTEGRATION_25ms = 0b1100,
@@ -203,22 +229,22 @@ private:
     VEML7700_CONFIG_INTEGRATION_INVALID
   } VEML7700_config_integration_time_t;
 
-  TwoWire *_i2cPort; //The generic connection to user's chosen I2C hardware
+  TwoWire *_i2cPort;
   Stream *_debugPort;
   uint8_t _deviceAddress;
   bool _debugEnabled;
 
   VEML7700_error_t _connected(void);
 
-  // I2C Read/Write
+  /** I2C Read/Write */
   VEML7700_error_t readI2CBuffer(uint8_t *dest, VEML7700_registers_t startRegister, uint16_t len);
   VEML7700_error_t writeI2CBuffer(uint8_t *src, VEML7700_registers_t startRegister, uint16_t len);
   VEML7700_error_t readI2CRegister(VEML7700_t *dest, VEML7700_registers_t registerAddress);
   VEML7700_error_t writeI2CRegister(VEML7700_t data, VEML7700_registers_t registerAddress);
 
-  // Convert the (sequential) integration time into the corresponding (non-sequential) configuration value
+  /** Convert the (sequential) integration time into the corresponding (non-sequential) configuration value */
   VEML7700_config_integration_time_t integrationTimeConfig(VEML7700_integration_time_t it);
-  // Convert the (non-sequential) integration time config into the corresponding (sequential) integration time
+  /** Convert the (non-sequential) integration time config into the corresponding (sequential) integration time */
   VEML7700_integration_time_t integrationTimeFromConfig(VEML7700_config_integration_time_t it);
 
 };

@@ -37,7 +37,7 @@ void setup()
       ;
   }
 
-  //Let's change the high thresold to 30000 counts:
+  //Let's change the high threshold to 30000 counts:
   mySensor.setHighThreshold(30000);
 
   //Confirm the high threshold was set correctly
@@ -68,16 +68,32 @@ void loop()
   Serial.print(F("Ambient: "));
   Serial.print(mySensor.getAmbientLight()); // Read the ambient light level from the sensor and print it
 
-  if (mySensor.getHighInterruptStatus()) // Check the high threshold interrupt status
-    Serial.print(F("\tHigh Threshold Exceeded"));
+  // Note: reading the interrupt status register clears the interrupts, so we need to check both
+  //       the high and low interrupt flags in a single read
+  
+  VEML7700_interrupt_status_t intStatus = mySensor.getInterruptStatus(); // Check the interrupt status
 
-  if (mySensor.getLowInterruptStatus()) // Check the low threshold interrupt status
-    Serial.println(F("\tLow Threshold Exceeded"));
+  // Possible values for intStatus are:
+  // VEML7700_INT_STATUS_NONE
+  // VEML7700_INT_STATUS_HIGH
+  // VEML7700_INT_STATUS_LOW
+  // VEML7700_INT_STATUS_BOTH
+  // VEML7700_INT_STATUS_INVALID
+
+  if (intStatus == VEML7700_INT_STATUS_INVALID)
+  {
+    Serial.print(F("\tInterrupt Status Read Error!"));
+  }
   else
-    Serial.println();
+  {
+    if (intStatus & VEML7700_INT_STATUS_HIGH) // Use a logical AND to check if the high flag is set
+      Serial.print(F("\tHigh Threshold Exceeded"));
 
-  //Clear the interrupt flags
-  mySensor.clearInterruptStatus();
+    if (intStatus & VEML7700_INT_STATUS_LOW) // Use a logical AND to check if the low flag is set
+      Serial.print(F("\tLow Threshold Exceeded"));
+  }
+
+  Serial.println();
 
   delay(250);
 }

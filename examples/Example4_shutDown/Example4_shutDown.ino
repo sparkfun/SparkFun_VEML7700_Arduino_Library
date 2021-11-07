@@ -46,7 +46,7 @@ void setup()
 
 void loop()
 {
-  if (shutdownState == VEML7700_POWER_ON) // Are we "On"? (Comment this if you are interested in how it effects the sleep current)
+  if (shutdownState == VEML7700_POWER_ON) // Are we "On"? (Comment this line if you are interested in how it effects the sleep current)
   {
     Serial.print(F("Lux: "));
     Serial.println(mySensor.getLux(), 4); // Read the lux from the sensor and print it

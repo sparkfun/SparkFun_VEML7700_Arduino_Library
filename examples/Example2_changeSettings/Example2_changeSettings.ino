@@ -65,11 +65,28 @@ void setup()
   Serial.print(F("The sensor gain (sensitivity mode) is: "));
   Serial.println(mySensor.getSensitivityModeStr());
 
-  Serial.println(F("Lux:"));
+  //We can also change the persistence ptotect number. Default is 1.
+  //Possible values are:
+  //VEML7700_PERSISTENCE_1
+  //VEML7700_PERSISTENCE_2
+  //VEML7700_PERSISTENCE_4
+  //VEML7700_PERSISTENCE_8
+  //Let's change the persistence protect to 4:
+  mySensor.setPersistenceProtect(VEML7700_PERSISTENCE_4);
+
+  //Confirm that the persistence protect was set correctly
+  Serial.print(F("The sensor persistence protect setting is: "));
+  Serial.println(mySensor.getPersistenceProtectStr());  
+
+  Serial.println(F("Lux:\tAmbient:\tWhite Level:"));
 }
 
 void loop()
 {
-  Serial.println(mySensor.getLux(), 4); // Read the lux from the sensor and print it
+  Serial.print(mySensor.getLux(), 4); // Read the lux from the sensor and print it
+  Serial.print("\t");
+  Serial.print(mySensor.getAmbientLight()); // Read the ambient light level
+  Serial.print("\t");
+  Serial.println(mySensor.getWhiteLevel()); // Read the white channel level
   delay(250);
 }
