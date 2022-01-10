@@ -1,9 +1,9 @@
 SparkFun VEML7700 Arduino Library
 ==============================
 
-[![SparkX smôl Environmental Peripheral Board (SPX-18976)](https://cdn.sparkfun.com//assets/parts/1/8/5/5/5/18981-Ambient_Light_Sensor_-_VEML7700__Qwiic_-01.jpg)](https://www.sparkfun.com/products/18976)
+[![SparkX Ambient Light Sensor - VEML7700 (Qwiic) (SPX-18981)](https://cdn.sparkfun.com//assets/parts/1/8/5/5/5/18981-Ambient_Light_Sensor_-_VEML7700__Qwiic_-01.jpg)](https://www.sparkfun.com/products/18981)
 
-[*SparkX smôl Environmental Peripheral Board (SPX-18976)*](https://www.sparkfun.com/products/18976)
+[*SparkX Ambient Light Sensor - VEML7700 (Qwiic) (SPX-18981)*](https://www.sparkfun.com/products/18981)
 
 The Vishay Semiconductors VEML7700 is a high accuracy ambient light sensor with 16-bit resolution in a miniature transparent package. It includes a high sensitive photo diode, a low noise amplifier, a 16-bit A/D converter and supports the I<sup>2</sup>C bus communication interface.
   
