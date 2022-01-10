@@ -1,7 +1,7 @@
 SparkFun VEML7700 Arduino Library
 ==============================
 
-[![SparkX smôl Environmental Peripheral Board (SPX-18976)]()](https://www.sparkfun.com/products/18976)
+[![SparkX smôl Environmental Peripheral Board (SPX-18976)](https://cdn.sparkfun.com//assets/parts/1/8/5/5/5/18981-Ambient_Light_Sensor_-_VEML7700__Qwiic_-01.jpg)](https://www.sparkfun.com/products/18976)
 
 [*SparkX smôl Environmental Peripheral Board (SPX-18976)*](https://www.sparkfun.com/products/18976)
 
