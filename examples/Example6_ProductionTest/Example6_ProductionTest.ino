@@ -59,7 +59,7 @@ void loop()
   float lux = mySensor.getLux(); // Read the lux
 
   // Check the lux is within bounds
-  if ((lux < 100.0) || (lux > 100000.0))
+  if ((lux < 20.0) || (lux > 100000.0))
   {
     digitalWrite(LED_BUILTIN, LOW);
     Wire.end();
