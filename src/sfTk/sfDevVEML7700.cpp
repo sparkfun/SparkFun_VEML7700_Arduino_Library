@@ -2,193 +2,120 @@
  * @file SparkFun_VEML7700_Arduino_Library.h
  *
  * @mainpage SparkFun VEML7700 Ambient Light Sensor Arduino Library
- * 
+ *
  * @section intro_sec Introduction
- * 
+ *
  * This library facilitates communication with the VEML7700 over I<sup>2</sup>C.
- * 
+ *
  * Want to support open source hardware? Buy a board from SparkFun!
- * <br>SparkX smôl Environmental Peripheral Board (SPX-18976): https://www.sparkfun.com/products/18976
- * 
+ *
  * @section author Author
- * 
+ *
  * This library was written by:
  * Paul Clark
  * SparkFun Electronics
  * November 4th 2021
- * 
- * @section license License
- * 
- * MIT: please see LICENSE.md for the full license information
- * 
+ *
+ * @author SparkFun Electronics
+ * @date 2021-2025
+ * @copyright Copyright (c) 2021-2025, SparkFun Electronics Inc. This project is released under the MIT License.
+ *
+ * SPDX-License-Identifier: MIT
+
+ *
  */
 
-#include "SparkFun_VEML7700_Arduino_Library.h"
-
-#define VEML7700_REGISTER_LENGTH 2 // 2 bytes per register (16-bit)
-#define VEML7700_NUM_INTEGRATION_TIMES 6 // Number of supported integration times
-#define VEML7700_NUM_GAIN_SETTINGS 4 // Number of supported gain settings
-#define VEML7700_NUM_PERSISTENCE_PROTECT 4 // Number of supported persistence protect settings
+#include "sfDevVEML7700.h"
 
 /** The sensor resolution vs. gain and integration time. Taken from the VEML7700 Application Note. */
-const float VEML7700_LUX_RESOLUTION[VEML7700_NUM_GAIN_SETTINGS][VEML7700_NUM_INTEGRATION_TIMES] =
-{
-// 25ms    50ms    100ms   200ms   400ms   800ms
-  {0.2304, 0.1152, 0.0576, 0.0288, 0.0144, 0.0072}, // Gain (sensitivity) 1
-  {0.1152, 0.0576, 0.0288, 0.0144, 0.0072, 0.0036}, // Gain (sensitivity) 2
-  {1.8432, 0.9216, 0.4608, 0.2304, 0.1152, 0.0576}, // Gain (sensitivity) 1/8
-  {0.9216, 0.4608, 0.2304, 0.1152, 0.0576, 0.0288}  // Gain (sensitivity) 1/4
+const float VEML7700_LUX_RESOLUTION[VEML7700_SENSITIVITY_INVALID][VEML7700_INTEGRATION_INVALID] = {
+    // 25ms    50ms    100ms   200ms   400ms   800ms
+    {0.2304, 0.1152, 0.0576, 0.0288, 0.0144, 0.0072}, // Gain (sensitivity) 1
+    {0.1152, 0.0576, 0.0288, 0.0144, 0.0072, 0.0036}, // Gain (sensitivity) 2
+    {1.8432, 0.9216, 0.4608, 0.2304, 0.1152, 0.0576}, // Gain (sensitivity) 1/8
+    {0.9216, 0.4608, 0.2304, 0.1152, 0.0576, 0.0288}  // Gain (sensitivity) 1/4
 };
 
 /** The VEML7700 gain (sensitivity) settings as text (string) */
-const char *VEML7700_GAIN_SETTINGS[VEML7700_NUM_GAIN_SETTINGS + 1] =
-{
-  // Note: these are in the order defined by ALS_SM and VEML7700_sensitivity_mode_t
-  "x1","x2","x1/8","x1/4","INVALID"
-};
+// Note: these are in the order defined by ALS_SM and VEML7700_sensitivity_mode_t
+const char *kVEML7700GainSettingsString[VEML7700_SENSITIVITY_INVALID + 1] = {"x1", "x2", "x1/8", "x1/4", "INVALID"};
 
-/** The VEML7700 integration time settings as text (strting) */
-const char *VEML7700_INTEGRATION_TIMES[VEML7700_NUM_INTEGRATION_TIMES + 1] =
-{
-  // Note: these are in ascending (VEML7700_integration_time_t) order
-  //       _not_ in ALS_IT (VEML7700_config_integration_time_t) order
-  "25ms","50ms","100ms","200ms","400ms","800ms","INVALID"
-};
+/** The VEML7700 integration time settings as text (string) */
+const char *kVEML7799IntegrationTimesString[VEML7700_INTEGRATION_INVALID + 1] = {"25ms",  "50ms",  "100ms",  "200ms",
+                                                                                 "400ms", "800ms", "INVALID"};
 
 /** The VEML7700 persistence protect settings as text (string) */
-const char *VEML7700_PERSISTENCE_PROTECT_SETTINGS[VEML7700_NUM_PERSISTENCE_PROTECT + 1] =
-{
-  "1", "2", "4", "8", "INVALID"
-};
+const char *kVEML7700PersistenceProtectStrings[VEML7700_PERSISTENCE_INVALID + 1] = {"1", "2", "4", "8", "INVALID"};
 
-VEML7700::VEML7700()
+//--------------------------------------------------------------------------------------------------
+// Helpful method - used by a majority of methods
+sfTkError_t sfDevVEML7700::updateConfiguration(sfDevVEML7700Config_t &config)
 {
-  _i2cPort = NULL;
-  _debugPort = NULL;
-  _deviceAddress = VEML7700_I2C_ADDRESS;
-  _debugEnabled = false;
+    if (_theBus == nullptr)
+        return ksfTkErrBusNotInit; // Not initialized
+
+    return  _theBus->readRegister((VEML7700_CONFIGURATION_REGISTER, config.all);
+}
+//--------------------------------------------------------------------------------------------------
+sfTkError_t sfDevVEML7700::begin(sfTkIBus *theBus))
+{
+
+    // Nullptr check
+    if (theBus == nullptr)
+        return ksfTkErrBusNotInit;
+
+    // Set bus pointer
+    _theBus = theBus;
+
+    /** Write _configurationRegister into the VEML7700_CONFIGURATION_REGISTER.
+        This will place the device into a known state, in case it was configured previously
+        and remained powered on when the code was restarted. */
+    sfDevVEML7700Config_t configurationRegister;
+    configurationRegister.all = 0x0000; // Clear the reserved bits
+    configurationRegister.CONFIG_REG_SD = VEML7700_POWER_ON;
+    configurationRegister.CONFIG_REG_INT_EN = VEML7700_INT_DISABLE;
+    configurationRegister.CONFIG_REG_PERS = VEML7700_PERSISTENCE_1;
+    configurationRegister.CONFIG_REG_IT = (VEML7700_t)integrationTimeConfig(VEML7700_INTEGRATION_100ms);
+    configurationRegister.CONFIG_REG_SM = VEML7700_SENSITIVITY_x1;
+
+    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, configurationRegister.all);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Begin communication with the VEML7700
-    @param  wirePort
-            <br>The TwoWire (I2C) port used to communicate with the sensor.
-            <br>Default is Wire.
-    @return True if communication with the VEML7700 was successful, otherwise false.
-*/
-/**************************************************************************/
-bool VEML7700::begin(TwoWire &wirePort)
-{
-  VEML7700_error_t err;
-
-  _i2cPort = &wirePort;
-
-  /** Write _configurationRegister into the VEML7700_CONFIGURATION_REGISTER.
-      This will place the device into a known state, in case it was configured previously
-      and remained powered on when the code was restarted. */
-
-  _configurationRegister.all = 0x0000; // Clear the reserved bits
-  _configurationRegister.CONFIG_REG_SD = VEML7700_POWER_ON;
-  _configurationRegister.CONFIG_REG_INT_EN = VEML7700_INT_DISABLE;
-  _configurationRegister.CONFIG_REG_PERS = VEML7700_PERSISTENCE_1;
-  _configurationRegister.CONFIG_REG_IT = (VEML7700_t)integrationTimeConfig(VEML7700_INTEGRATION_100ms);
-  _configurationRegister.CONFIG_REG_SM = VEML7700_SENSITIVITY_x1;
-
-  err = writeI2CRegister(_configurationRegister.all, VEML7700_CONFIGURATION_REGISTER);
-
-  if (_debugEnabled)
-  {
-    _debugPort->print(F("VEML7700::begin: I2C error: "));
-    _debugPort->println(err);
-  }
-
-  return (err == VEML7700_ERROR_SUCCESS);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Enable debug messages on the chosen Serial port (Stream)
-    @param  debugPort
-            <br>The Serial port (Stream) the debug messages will be printed to.
-            <br>Default is Serial.
-*/
-/**************************************************************************/
-void VEML7700::enableDebugging(Stream &debugPort)
-{
-  _debugPort = &debugPort;
-  _debugEnabled = true;
-}
-
-/**************************************************************************/
-/*!
-    @brief  Disable debug messages
-*/
-/**************************************************************************/
-void VEML7700::disableDebugging()
-{
-  _debugEnabled = false;
-}
-
+//--------------------------------------------------------------------------------------------------
 /**************************************************************************/
 /*!
     @brief  Check that the VEML7700 is awake and communicating.
     @return True if communication with the VEML7700 was successful, otherwise false.
 */
 /**************************************************************************/
-boolean VEML7700::isConnected()
+bool sfDevVEML7700::isConnected(void)
 {
-  if (_connected() != VEML7700_ERROR_SUCCESS)
-  {
-    return false;
-  }
-  return true;
-}
-
-VEML7700_error_t VEML7700::_connected()
-{
-  VEML7700_error_t err;
-
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    if (_debugEnabled)
-    {
-  		_debugPort->print(F("VEML7700::_connected: error: "));
-      _debugPort->println(err);
-    }
-    return err;
-  }
-
-  if (_debugEnabled) _debugPort->println("VEML7700::_connected: success!");
-
-  return VEML7700_ERROR_SUCCESS;
+    sfDevVEML7700Config_t config;
+    return updateConfiguration(config) == ksfTkErrSuccess;
 }
 
 /**************************************************************************/
 /*!
     @brief  Set the VEML7700's shut down setting (ALS_SD)
-    @param  sd
+    @param  shutdown
             <br>The shut down setting. Possible values are:
             <br>VEML7700_POWER_ON
             <br>VEML7700_SHUT_DOWN
-    @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
+
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::setShutdown(VEML7700_shutdown_t sd)
+sfTkError_t sfDevVEML7700::setShutdown(bool shutdown)
 {
-  VEML7700_error_t err;
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return err;
-  }
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  _configurationRegister.CONFIG_REG_SD = (VEML7700_t)sd;
+    if (rc != ksfTkErrSuccess)
+        return rc; // Error reading the configuration register
 
-  return writeI2CRegister(_configurationRegister.all, VEML7700_CONFIGURATION_REGISTER);
+    config.CONFIG_REG_SD = shutdown ? VEML7700_SHUT_DOWN : VEML7700_POWER_ON;
+
+    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -197,17 +124,15 @@ VEML7700_error_t VEML7700::setShutdown(VEML7700_shutdown_t sd)
     @return VEML7700_POWER_ON or VEML7700_SHUT_DOWN if successful, VEML7700_SHUTDOWN_INVALID otherwise
 */
 /**************************************************************************/
-VEML7700_shutdown_t VEML7700::getShutdown()
+bool sfDevVEML7700::isShutdown(void)
 {
-  VEML7700_error_t err;
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return VEML7700_SHUTDOWN_INVALID;
-  }
+    if (rc != ksfTkErrSuccess)
+        return true; // Error reading the configuration register
 
-  return ((VEML7700_shutdown_t)_configurationRegister.CONFIG_REG_SD);
+    return (((VEML7700_shutdown_t)_configurationRegister.CONFIG_REG_SD) == VEML7700_SHUT_DOWN);
 }
 
 /**************************************************************************/
@@ -220,19 +145,18 @@ VEML7700_shutdown_t VEML7700::getShutdown()
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::setInterruptEnable(VEML7700_interrupt_enable_t ie)
+sfTkError_t sfDevVEML7700::enableInterrupt(bool bEnable)
 {
-  VEML7700_error_t err;
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return err;
-  }
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  _configurationRegister.CONFIG_REG_INT_EN = (VEML7700_t)ie;
+    if (rc != ksfTkErrSuccess)
+        return rc; // Error reading the configuration register
 
-  return writeI2CRegister(_configurationRegister.all, VEML7700_CONFIGURATION_REGISTER);
+    config.CONFIG_REG_INT_EN = (VEML7700_t)bEnable;
+
+    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -243,41 +167,16 @@ VEML7700_error_t VEML7700::setInterruptEnable(VEML7700_interrupt_enable_t ie)
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::getInterruptEnable(VEML7700_interrupt_enable_t *ie)
+bool sfDevVEML7700::interruptEnabled(void)
 {
-  VEML7700_error_t err;
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  
-  if (err == VEML7700_ERROR_SUCCESS)
-  {
-    *ie = (VEML7700_interrupt_enable_t)_configurationRegister.CONFIG_REG_INT_EN;
-  }
-  else
-  {
-    *ie = VEML7700_INT_INVALID;
-  }
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  return (err);
-}
+    if (rc != ksfTkErrSuccess)
+        return false; // Error reading the configuration register
 
-/**************************************************************************/
-/*!
-    @brief  Get the VEML7700's interrupt enable setting (ALS_INT_EN)
-    @return  VEML7700_INT_DISABLE or VEML7700_INT_ENABLE if successful, VEML7700_INT_INVALID otherwise
-*/
-/**************************************************************************/
-VEML7700_interrupt_enable_t VEML7700::getInterruptEnable()
-{
-  VEML7700_error_t err;
-
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return VEML7700_INT_INVALID;
-  }
-
-  return ((VEML7700_interrupt_enable_t)_configurationRegister.CONFIG_REG_INT_EN);
+    return config.CONFIG_REG_INT_EN == VEML7700_INT_ENABLE;
 }
 
 /**************************************************************************/
@@ -292,19 +191,19 @@ VEML7700_interrupt_enable_t VEML7700::getInterruptEnable()
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::setPersistenceProtect(VEML7700_persistence_protect_t pp)
+sfTkError_t sfDevVEML7700::setPersistenceProtect(VEML7700_persistence_protect_t pp)
 {
-  VEML7700_error_t err;
+    if (pp >= VEML7700_PERSISTENCE_INVALID)
+        return ksfTkErrInvalidParam;
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return err;
-  }
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  _configurationRegister.CONFIG_REG_PERS = (VEML7700_t)pp;
+    if (rc != ksfTkErrSuccess)
+        return rc; // Error reading the configuration register
 
-  return writeI2CRegister(_configurationRegister.all, VEML7700_CONFIGURATION_REGISTER);
+    config.CONFIG_REG_PERS = (VEML7700_t)pp;
+    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -315,47 +214,15 @@ VEML7700_error_t VEML7700::setPersistenceProtect(VEML7700_persistence_protect_t 
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::getPersistenceProtect(VEML7700_persistence_protect_t *pp)
+VEML7700_persistence_protect_t sfDevVEML7700::persistenceProtect(void)
 {
-  VEML7700_error_t err;
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  
-  if (err == VEML7700_ERROR_SUCCESS)
-  {
-    *pp = (VEML7700_persistence_protect_t)_configurationRegister.CONFIG_REG_PERS;
-  }
-  else
-  {
-    *pp = VEML7700_PERSISTENCE_INVALID;
-  }
+    if (rc != ksfTkErrSuccess)
+        return VEML7700_PERSISTENCE_INVALID; // Error reading the configuration register
 
-  return (err);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Get the VEML7700's persistence protect number setting (ALS_PERS)
-    @return If successful:
-            <br>VEML7700_PERSISTENCE_1
-            <br>VEML7700_PERSISTENCE_2
-            <br>VEML7700_PERSISTENCE_4
-            <br>VEML7700_PERSISTENCE_8
-            <br>Otherwise:
-            <br>VEML7700_PERSISTENCE_INVALID
-*/
-/**************************************************************************/
-VEML7700_persistence_protect_t VEML7700::getPersistenceProtect()
-{
-  VEML7700_error_t err;
-
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return VEML7700_PERSISTENCE_INVALID;
-  }
-
-  return ((VEML7700_persistence_protect_t)_configurationRegister.CONFIG_REG_PERS);
+    return (VEML7700_persistence_protect_t)config.CONFIG_REG_PERS;
 }
 
 /**************************************************************************/
@@ -363,13 +230,14 @@ VEML7700_persistence_protect_t VEML7700::getPersistenceProtect()
     @brief  Get the VEML7700's persistence protect number setting (ALS_PERS) as printable text
 */
 /**************************************************************************/
-const char * VEML7700::getPersistenceProtectStr()
+const char *sfDevVEML7700::persistenceProtectString(void)
 {
-  VEML7700_persistence_protect_t pp;
+    VEML7700_persistence_protect_t pp = persistenceProtect();
 
-  getPersistenceProtect(&pp);
+    if (pp < VEML7700_PERSISTENCE_1 || pp >= VEML7700_PERSISTENCE_INVALID)
+        return "INVALID"; // Invalid persistence protect setting
 
-  return (VEML7700_PERSISTENCE_PROTECT_SETTINGS[pp]);
+    return kVEML7700PersistenceProtectStrings[pp];
 }
 
 /**************************************************************************/
@@ -388,45 +256,20 @@ const char * VEML7700::getPersistenceProtectStr()
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::setIntegrationTime(VEML7700_integration_time_t it)
+sfTkError_t sfDevVEML7700::setIntegrationTime(VEML7700_integration_time_t it)
 {
-  VEML7700_error_t err;
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return err;
-  }
+    if (it >= VEML7700_INTEGRATION_INVALID)
+        return ksfTkErrInvalidParam; // Invalid integration time setting
 
-  _configurationRegister.CONFIG_REG_IT = (VEML7700_t)integrationTimeConfig(it);
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  return writeI2CRegister(_configurationRegister.all, VEML7700_CONFIGURATION_REGISTER);
-}
+    if (rc != ksfTkErrSuccess)
+        return rc; // Error reading the configuration register
 
-/**************************************************************************/
-/*!
-    @brief  Get the VEML7700's integration time setting (ALS_IT)
-    @param  it
-            <br>Will be set to the intergration time setting on return
-    @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
-*/
-/**************************************************************************/
-VEML7700_error_t VEML7700::getIntegrationTime(VEML7700_integration_time_t *it)
-{
-  VEML7700_error_t err;
-
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-
-  if (err == VEML7700_ERROR_SUCCESS)
-  {
-    *it = (VEML7700_integration_time_t)integrationTimeFromConfig((VEML7700_config_integration_time_t)_configurationRegister.CONFIG_REG_IT);
-  }
-  else
-  {
-    *it = VEML7700_INTEGRATION_INVALID;
-  }
-
-  return (err);
+    config.CONFIG_REG_IT = (VEML7700_t)integrationTimeConfig(it);
+    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -443,17 +286,16 @@ VEML7700_error_t VEML7700::getIntegrationTime(VEML7700_integration_time_t *it)
             <br>VEML7700_INTEGRATION_INVALID
 */
 /**************************************************************************/
-VEML7700_integration_time_t VEML7700::getIntegrationTime()
+VEML7700_integration_time_t sfDevVEML7700::integrationTime(void)
 {
-  VEML7700_error_t err;
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return VEML7700_INTEGRATION_INVALID;
-  }
+    if (rc != ksfTkErrSuccess)
+        return VEML7700_INTEGRATION_INVALID; // Error reading the configuration register
 
-  return ((VEML7700_integration_time_t)integrationTimeFromConfig((VEML7700_config_integration_time_t)_configurationRegister.CONFIG_REG_IT));
+    return ((VEML7700_integration_time_t)integrationTimeFromConfig(
+        (VEML7700_config_integration_time_t)config.CONFIG_REG_IT));
 }
 
 /**************************************************************************/
@@ -461,13 +303,14 @@ VEML7700_integration_time_t VEML7700::getIntegrationTime()
     @brief  Get the VEML7700's integration time setting (ALS_IT) as printable text
 */
 /**************************************************************************/
-const char * VEML7700::getIntegrationTimeStr()
+const char *sfDevVEML7700::integrationTimeString(void)
 {
-  VEML7700_integration_time_t it;
+    VEML7700_integration_time_t it = integrationTime();
 
-  getIntegrationTime(&it);
+    if (it < VEML7700_INTEGRATION_25ms || it >= VEML7700_INTEGRATION_INVALID)
+        return "INVALID"; // Invalid integration time setting
 
-  return (VEML7700_INTEGRATION_TIMES[it]);
+    return kVEML7799IntegrationTimesString[it];
 }
 
 /**************************************************************************/
@@ -482,45 +325,19 @@ const char * VEML7700::getIntegrationTimeStr()
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::setSensitivityMode(VEML7700_sensitivity_mode_t sm)
+sfTkError_t sfDevVEML7700::setSensitivityMode(VEML7700_sensitivity_mode_t sm)
 {
-  VEML7700_error_t err;
+    if (sm >= VEML7700_SENSITIVITY_INVALID)
+        return ksfTkErrInvalidParam;
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return err;
-  }
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  _configurationRegister.CONFIG_REG_SM = (VEML7700_t)sm;
+    if (rc != ksfTkErrSuccess)
+        return rc; // Error reading the configuration register
 
-  return writeI2CRegister(_configurationRegister.all, VEML7700_CONFIGURATION_REGISTER);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Get the VEML7700's sensitivity mode selection (ALS_SM)
-    @param  sm
-            <br>Will be set to the sensitivity mode selection on return
-    @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
-*/
-/**************************************************************************/
-VEML7700_error_t VEML7700::getSensitivityMode(VEML7700_sensitivity_mode_t *sm)
-{
-  VEML7700_error_t err;
-
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  
-  if (err == VEML7700_ERROR_SUCCESS)
-  {
-    *sm = (VEML7700_sensitivity_mode_t)_configurationRegister.CONFIG_REG_SM;
-  }
-  else
-  {
-    *sm = VEML7700_SENSITIVITY_INVALID;
-  }
-
-  return (err);
+    config.CONFIG_REG_SM = (VEML7700_t)sm;
+    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -535,17 +352,15 @@ VEML7700_error_t VEML7700::getSensitivityMode(VEML7700_sensitivity_mode_t *sm)
             <br>VEML7700_SENSITIVITY_INVALID
 */
 /**************************************************************************/
-VEML7700_sensitivity_mode_t VEML7700::getSensitivityMode()
+VEML7700_sensitivity_mode_t sfDevVEML7700::sensitivityMode()
 {
-  VEML7700_error_t err;
+    sfDevVEML7700Config_t config;
+    sfTkError_t rc = updateConfiguration(config);
 
-  err = readI2CRegister((VEML7700_t *)&_configurationRegister, VEML7700_CONFIGURATION_REGISTER);
-  if (err != VEML7700_ERROR_SUCCESS)
-  {
-    return VEML7700_SENSITIVITY_INVALID;
-  }
+    if (rc != ksfTkErrSuccess)
+        return VEML7700_SENSITIVITY_INVALID; // Error reading the configuration register
 
-  return ((VEML7700_sensitivity_mode_t)_configurationRegister.CONFIG_REG_SM);
+    return ((VEML7700_sensitivity_mode_t)config.CONFIG_REG_SM);
 }
 
 /**************************************************************************/
@@ -553,13 +368,15 @@ VEML7700_sensitivity_mode_t VEML7700::getSensitivityMode()
     @brief  Get the VEML7700's sensitivity mode selection (ALS_SM) as printable text
 */
 /**************************************************************************/
-const char * VEML7700::getSensitivityModeStr()
+const char *sfDevVEML7700::sensitivityModeString()
 {
-  VEML7700_sensitivity_mode_t sm;
+    VEML7700_sensitivity_mode_t sm = sensitivityMode()
 
-  getSensitivityMode(&sm);
+        if (sm < VEML7700_SENSITIVITY_x1 ||
+            sm >= VEML7700_SENSITIVITY_INVALID) return "INVALID"; // Invalid sensitivity mode setting
+    getSensitivityMode(&sm);
 
-  return (VEML7700_GAIN_SETTINGS[sm]);
+    return kVEML7700GainSettingsString[sm];
 }
 
 /**************************************************************************/
@@ -570,35 +387,23 @@ const char * VEML7700::getSensitivityModeStr()
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::setHighThreshold(uint16_t threshold)
+sfTkError_t sfDevVEML7700::setHighThreshold(uint16_t threshold)
 {
-  return (writeI2CRegister((VEML7700_t)threshold, VEML7700_HIGH_THRESHOLD));
+    return theBus->writeRegister(VEML7700_HIGH_THRESHOLD, threshold);
 }
 
 /**************************************************************************/
 /*!
     @brief  Get the VEML7700's ALS high threshold window setting (ALS_WH)
-    @param  threshold
-            <br>Will be set to the threshold setting on return
-    @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
+    @return The threshold setting, or 0xFFFF on error
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::getHighThreshold(uint16_t *threshold)
+uint16_t sfDevVEML7700::highThreshold(void)
 {
-  return (readI2CRegister((VEML7700_t *)threshold, VEML7700_HIGH_THRESHOLD));
-}
-
-/**************************************************************************/
-/*!
-    @brief  Get the VEML7700's ALS high threshold window setting (ALS_WH)
-    @return The threshold setting
-*/
-/**************************************************************************/
-uint16_t VEML7700::getHighThreshold()
-{
-  uint16_t threshold;
-  getHighThreshold(&threshold);
-  return (threshold);
+    uint16_t threshold;
+    sfTkError_t rc =_theBus->readRegister((VEML7700_HIGH_THRESHOLD, threshold);
+    
+    return rc == ksfTkErrSuccess ? threshold : kVEML7700ValueError; // Return 0xFFFF on error
 }
 
 /**************************************************************************/
@@ -609,22 +414,9 @@ uint16_t VEML7700::getHighThreshold()
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::setLowThreshold(uint16_t threshold)
+sfTkError_t sfDevVEML7700::setLowThreshold(uint16_t threshold)
 {
-  return (writeI2CRegister((VEML7700_t)threshold, VEML7700_LOW_THRESHOLD));
-}
-
-/**************************************************************************/
-/*!
-    @brief  Get the VEML7700's ALS low threshold window setting (ALS_WL)
-    @param  threshold
-            <br>Will be set to the threshold setting on return
-    @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
-*/
-/**************************************************************************/
-VEML7700_error_t VEML7700::getLowThreshold(uint16_t *threshold)
-{
-  return (readI2CRegister((VEML7700_t *)threshold, VEML7700_LOW_THRESHOLD));
+    return theBus->writeRegister(VEML7700_LOW_THRESHOLD, threshold);
 }
 
 /**************************************************************************/
@@ -633,24 +425,12 @@ VEML7700_error_t VEML7700::getLowThreshold(uint16_t *threshold)
     @return The threshold setting
 */
 /**************************************************************************/
-uint16_t VEML7700::getLowThreshold()
+uint16_t sfDevVEML7700::lowThreshold(void)
 {
-  uint16_t threshold;
-  getLowThreshold(&threshold);
-  return (threshold);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Get the VEML7700's ambient light sensor data (ALS)
-    @param  ambient
-            <br>Will be set to the ambient level on return
-    @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
-*/
-/**************************************************************************/
-VEML7700_error_t VEML7700::getAmbientLight(uint16_t *ambient)
-{
-  return (readI2CRegister((VEML7700_t *)ambient, VEML7700_ALS_OUTPUT));
+    uint16_t threshold;
+    sfTkError_t rc =_theBus->readRegister((VEML7700_LOW_THRESHOLD, threshold);
+    
+    return rc == ksfTkErrSuccess ? threshold : kVEML7700ValueError; // Return 0xFFFF on error
 }
 
 /**************************************************************************/
@@ -659,24 +439,13 @@ VEML7700_error_t VEML7700::getAmbientLight(uint16_t *ambient)
     @return The ambient light reading
 */
 /**************************************************************************/
-uint16_t VEML7700::getAmbientLight()
+uint16_t sfDevVEML7700::readAmbientLight(void)
 {
-  uint16_t ambient;
-  getAmbientLight(&ambient);
-  return (ambient);
-}
 
-/**************************************************************************/
-/*!
-    @brief  Get the VEML7700's white level data (WHITE)
-    @param  whiteLevel
-            <br>Will be set to the white level on return
-    @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
-*/
-/**************************************************************************/
-VEML7700_error_t VEML7700::getWhiteLevel(uint16_t *whiteLevel)
-{
-  return (readI2CRegister((VEML7700_t *)whiteLevel, VEML7700_WHITE_OUTPUT));
+    uint16_t ambient;
+    sfTkError_t rc =_theBus->readRegister((VEML7700_ALS_OUTPUT, ambient);
+    
+    return rc == ksfTkErrSuccess ? ambient : kVEML7700ValueError;
 }
 
 /**************************************************************************/
@@ -685,11 +454,12 @@ VEML7700_error_t VEML7700::getWhiteLevel(uint16_t *whiteLevel)
     @return The white level reading
 */
 /**************************************************************************/
-uint16_t VEML7700::getWhiteLevel()
+uint16_t sfDevVEML7700::readWhiteLevel(void)
 {
-  uint16_t whiteLevel;
-  getWhiteLevel(&whiteLevel);
-  return (whiteLevel);
+    uint16_t whiteLevel;
+    sfTkError_t rc =_theBus->readRegister((VEML7700_WHITE_OUTPUT, whiteLevel);
+    
+    return rc == ksfTkErrSuccess ? whiteLevel : kVEML7700ValueError;
 }
 
 /**************************************************************************/
@@ -700,84 +470,30 @@ uint16_t VEML7700::getWhiteLevel()
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::getLux(float *lux)
+float sfDevVEML7700::readLux(void)
 {
-  /** First, we need to extract the correct resolution from the VEML7700_LUX_RESOLUTION
-      gain and integration time look up table. Let's begin by reading the gain
-      (sensitivity) and integration time. */
+    /** First, we need to extract the correct resolution from the VEML7700_LUX_RESOLUTION
+        gain and integration time look up table. Let's begin by reading the gain
+        (sensitivity) and integration time. */
 
-  VEML7700_error_t err;
-  VEML7700_sensitivity_mode_t sm;
+    VEML7700_sensitivity_mode_t senseMode = sensitivityMode();
 
-  err = getSensitivityMode(&sm);
+    if (senseMode == VEML7700_SENSITIVITY_INVALID)
+        return 0.0;
 
-  if (err != VEML7700_ERROR_SUCCESS)
-    return (err);
+    VEML7700_integration_time_t intTime = integrationTime();
 
-  if (_debugEnabled)
-  {
-    _debugPort->print(F("VEML7700::getLux: gain / sensitivity: "));
-    _debugPort->println(VEML7700_GAIN_SETTINGS[sm]);
-  }
+    if (intTime == VEML7700_INTEGRATION_INVALID)
+        return 0.0;
 
-  VEML7700_integration_time_t it;
+    /** Now we read the ambient level and multiply it by the resolution */
+    uint16_t ambient = ambientLight();
 
-  err = getIntegrationTime(&it);
+    if (ambient == kVEML7700ValueError)
+        return 0.0;
 
-  if (err != VEML7700_ERROR_SUCCESS)
-    return (err);
-
-  if (_debugEnabled)
-  {
-    _debugPort->print(F("VEML7700::getLux: integration time: "));
-    _debugPort->println(VEML7700_INTEGRATION_TIMES[it]);
-  }
-
-  /** Now we can extract the correct resolution from the look up table. */
-  float resolution = VEML7700_LUX_RESOLUTION[sm][it];
-
-  if (_debugEnabled)
-  {
-    _debugPort->print(F("VEML7700::getLux: resolution: "));
-    _debugPort->println(resolution, 4);
-  }
-
-  /** Now we read the ambient level and multiply it by the resolution */
-  uint16_t ambient;
-
-  err = getAmbientLight(&ambient);
-
-  if (err != VEML7700_ERROR_SUCCESS)
-    return (err);
-
-  if (_debugEnabled)
-  {
-    _debugPort->print(F("VEML7700::getLux: ambient: "));
-    _debugPort->println(ambient);
-  }
-
-  *lux = (float)ambient * resolution;
-
-  if (_debugEnabled)
-  {
-    _debugPort->print(F("VEML7700::getLux: lux: "));
-    _debugPort->println(*lux, 4);
-  }
-
-  return (VEML7700_ERROR_SUCCESS);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Read the sensor data and calculate the lux
-    @return The lux
-*/
-/**************************************************************************/
-float VEML7700::getLux()
-{
-  float lux = 0.0;
-  getLux(&lux);
-  return (lux);
+    // Apply the resolution to the ambient light reading
+    return (float)ambient * VEML7700_LUX_RESOLUTION[senseMode][intTime];
 }
 
 /**************************************************************************/
@@ -797,171 +513,53 @@ float VEML7700::getLux()
     @return VEML7700_SUCCESS (VEML7700_ERROR_SUCCESS) if successful
 */
 /**************************************************************************/
-VEML7700_error_t VEML7700::getInterruptStatus(VEML7700_interrupt_status_t *status)
+VEML7700_interrupt_status_t sfDevVEML7700::interruptStatus(void)
 {
-  VEML7700_error_t err;
-  VEML7700_INTERRUPT_STATUS_REGISTER_t isr;
+    VEML7700_error_t err;
+    VEML7700_INTERRUPT_STATUS_REGISTER_t isr;
 
-  err = readI2CRegister((VEML7700_t *)&isr, VEML7700_INTERRUPT_STATUS);
+    uint16_t ambient;
+    sfTkError_t rc =_theBus->readRegister((VEML7700_INTERRUPT_STATUS, isr.all);
 
-  if (err == VEML7700_ERROR_SUCCESS)
-  {
-    *status = (VEML7700_interrupt_status_t)isr.INT_STATUS_REG_INT_FLAGS;
-  }
-  else
-  {
-    *status = VEML7700_INT_STATUS_INVALID;
-  }
-
-  return (err);
+    return rc != ksfTkErrSuccess ? VEML7700_INT_STATUS_INVALID : (VEML7700_interrupt_status_t)isr.INT_STATUS_REG_INT_FLAGS;
 }
 
-/**************************************************************************/
-/*!
-    @brief  Read the VEML7700's interrupt status register
-            <br>Note: reading the interrupt status register clears the interrupts.
-            <br>      So, we need to check both interrupt flags in a single read.
-    @return If successful:
-            <br>VEML7700_INT_STATUS_NONE
-            <br>VEML7700_INT_STATUS_HIGH
-            <br>VEML7700_INT_STATUS_LOW
-            <br>VEML7700_INT_STATUS_BOTH
-            <br>Otherwise:
-            <br>VEML7700_INT_STATUS_INVALID
-*/
-/**************************************************************************/
-VEML7700_interrupt_status_t VEML7700::getInterruptStatus()
+sfDevVEML7700::VEML7700_config_integration_time_t sfDevVEML7700::integrationTimeConfig(VEML7700_integration_time_t it)
 {
-  VEML7700_error_t err;
-  VEML7700_INTERRUPT_STATUS_REGISTER_t isr;
+    // since the value of integration time is defined in a simple sequential order, and the intput is typed,
+    // just use a translation table.
+    VEML7700_config_integration_time_t table[] = {VEML7700_CONFIG_INTEGRATION_25ms,   VEML7700_CONFIG_INTEGRATION_50ms,
+                                                  VEML7700_CONFIG_INTEGRATION_100ms,  VEML7700_CONFIG_INTEGRATION_200ms,
+                                                  VEML7700_CONFIG_INTEGRATION_400ms,  VEML7700_CONFIG_INTEGRATION_800ms];
 
-  err = readI2CRegister((VEML7700_t *)&isr, VEML7700_INTERRUPT_STATUS);
-
-  if (err != VEML7700_ERROR_SUCCESS)
-    return (VEML7700_INT_STATUS_INVALID);
-
-  return ((VEML7700_interrupt_status_t)isr.INT_STATUS_REG_INT_FLAGS);  
+    return tt < VEML7700_INTEGRATION_INVALID ? table[tt] : VEML7700_CONFIG_INTEGRATION_INVALID;
 }
 
-VEML7700_error_t VEML7700::readI2CBuffer(uint8_t *dest, VEML7700_registers_t startRegister, uint16_t len)
+VEML7700_integration_time_t sfDevVEML7700::integrationTimeFromConfig(
+    sfDevVEML7700::VEML7700_config_integration_time_t it)
 {
-  _i2cPort->beginTransmission(_deviceAddress);
-  _i2cPort->write(startRegister);
-  if (_i2cPort->endTransmission(false) != 0)
-  {
-    if (_debugEnabled) _debugPort->println(F("VEML7700::readI2CBuffer: endTransmission error"));
-    return VEML7700_ERROR_READ;
-  }
-
-  _i2cPort->requestFrom(_deviceAddress, (uint8_t)len);
-  if (_debugEnabled)
-  {
-    _debugPort->print(F("VEML7700::readI2CBuffer: register: 0x"));
-    _debugPort->println(startRegister, HEX);
-    _debugPort->print(F("VEML7700::readI2CBuffer: device returned:"));
-  }
-  for (uint16_t i = 0; i < len; i++)
-  {
-    dest[i] = _i2cPort->read();
-    if (_debugEnabled)
+    switch (it)
     {
-    _debugPort->print(F(" 0x"));
-    _debugPort->print(dest[i], HEX);
-    }
-  }
-  if (_debugEnabled) _debugPort->println(F(""));
-
-  return VEML7700_ERROR_SUCCESS;
-}
-
-VEML7700_error_t VEML7700::writeI2CBuffer(uint8_t *src, VEML7700_registers_t startRegister, uint16_t len)
-{
-  _i2cPort->beginTransmission(_deviceAddress);
-  _i2cPort->write(startRegister);
-  for (uint16_t i = 0; i < len; i++)
-  {
-    _i2cPort->write(src[i]);
-  }
-  if (_i2cPort->endTransmission(true) != 0)
-  {
-    return VEML7700_ERROR_WRITE;
-  }
-  return VEML7700_ERROR_SUCCESS;
-}
-
-VEML7700_error_t VEML7700::readI2CRegister(VEML7700_t *dest, VEML7700_registers_t registerAddress)
-{
-  VEML7700_error_t err;
-  uint8_t tempDest[2];
-  err = readI2CBuffer(tempDest, registerAddress, VEML7700_REGISTER_LENGTH);
-  if (err == VEML7700_ERROR_SUCCESS)
-  {
-    *dest = (tempDest[0]) | ((VEML7700_t)tempDest[1] << 8);
-  }
-  return err;
-}
-
-VEML7700_error_t VEML7700::writeI2CRegister(VEML7700_t data, VEML7700_registers_t registerAddress)
-{
-  uint8_t d[2];
-  // Write LSB first
-  d[0] = (uint8_t)(data & 0x00FF);
-  d[1] = (uint8_t)((data & 0xFF00) >> 8);
-  return writeI2CBuffer(d, registerAddress, VEML7700_REGISTER_LENGTH);
-}
-
-VEML7700::VEML7700_config_integration_time_t VEML7700::integrationTimeConfig(VEML7700_integration_time_t it)
-{
-  switch (it)
-  {
-    case VEML7700_INTEGRATION_25ms:
-      return (VEML7700_CONFIG_INTEGRATION_25ms);
-      break;
-    case VEML7700_INTEGRATION_50ms:
-      return (VEML7700_CONFIG_INTEGRATION_50ms);
-      break;
-    case VEML7700_INTEGRATION_100ms:
-      return (VEML7700_CONFIG_INTEGRATION_100ms);
-      break;
-    case VEML7700_INTEGRATION_200ms:
-      return (VEML7700_CONFIG_INTEGRATION_200ms);
-      break;
-    case VEML7700_INTEGRATION_400ms:
-      return (VEML7700_CONFIG_INTEGRATION_400ms);
-      break;
-    case VEML7700_INTEGRATION_800ms:
-      return (VEML7700_CONFIG_INTEGRATION_800ms);
-      break;
-    default:
-      break;
-  }
-  return (VEML7700_CONFIG_INTEGRATION_INVALID);
-}
-
-VEML7700_integration_time_t VEML7700::integrationTimeFromConfig(VEML7700::VEML7700_config_integration_time_t it)
-{
-  switch (it)
-  {
     case VEML7700_CONFIG_INTEGRATION_25ms:
-      return (VEML7700_INTEGRATION_25ms);
-      break;
+        return (VEML7700_INTEGRATION_25ms);
+        break;
     case VEML7700_CONFIG_INTEGRATION_50ms:
-      return (VEML7700_INTEGRATION_50ms);
-      break;
+        return (VEML7700_INTEGRATION_50ms);
+        break;
     case VEML7700_CONFIG_INTEGRATION_100ms:
-      return (VEML7700_INTEGRATION_100ms);
-      break;
+        return (VEML7700_INTEGRATION_100ms);
+        break;
     case VEML7700_CONFIG_INTEGRATION_200ms:
-      return (VEML7700_INTEGRATION_200ms);
-      break;
+        return (VEML7700_INTEGRATION_200ms);
+        break;
     case VEML7700_CONFIG_INTEGRATION_400ms:
-      return (VEML7700_INTEGRATION_400ms);
-      break;
+        return (VEML7700_INTEGRATION_400ms);
+        break;
     case VEML7700_CONFIG_INTEGRATION_800ms:
-      return (VEML7700_INTEGRATION_800ms);
-      break;
+        return (VEML7700_INTEGRATION_800ms);
+        break;
     default:
-      break;
-  }
-  return (VEML7700_INTEGRATION_INVALID);
+        break;
+    }
+    return (VEML7700_INTEGRATION_INVALID);
 }
