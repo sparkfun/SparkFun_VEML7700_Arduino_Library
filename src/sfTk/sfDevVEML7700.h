@@ -68,6 +68,13 @@ typedef enum
     VEML7700_PERSISTENCE_INVALID
 } VEML7700_persistence_protect_t;
 
+/** ALS interrupt enable setting */
+typedef enum
+{
+    VEML7700_INT_DISABLE,
+    VEML7700_INT_ENABLE,
+    VEML7700_INT_INVALID
+} VEML7700_interrupt_enable_t;
 /** ALS interrupt status, logical OR of the crossing low and high threshold INT triggers */
 typedef enum
 {
@@ -96,7 +103,7 @@ class sfDevVEML7700
     {
     }
 
-    sfTkError_t begin(sfTkBus *theBus = nullptr);
+    sfTkError_t begin(sfTkIBus *theBus = nullptr);
 
     bool isConnected();
 
@@ -182,7 +189,7 @@ class sfDevVEML7700
     } VEML7700_INTERRUPT_STATUS_REGISTER_t;
 
     /** VEML7700 Registers */
-    typedef enum
+    typedef enum : uint8_t
     {
         VEML7700_CONFIGURATION_REGISTER,
         VEML7700_HIGH_THRESHOLD,
@@ -211,5 +218,5 @@ class sfDevVEML7700
     /** Convert the (non-sequential) integration time config into the corresponding (sequential) integration time */
     VEML7700_integration_time_t integrationTimeFromConfig(VEML7700_config_integration_time_t it);
 
-    sfTkBus *_theBus;
+    sfTkIBus *_theBus;
 };

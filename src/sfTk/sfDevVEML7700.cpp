@@ -26,6 +26,7 @@
  */
 
 #include "sfDevVEML7700.h"
+#include "Arduino.h"
 
 /** The sensor resolution vs. gain and integration time. Taken from the VEML7700 Application Note. */
 const float VEML7700_LUX_RESOLUTION[VEML7700_SENSITIVITY_INVALID][VEML7700_INTEGRATION_INVALID] = {
@@ -54,10 +55,10 @@ sfTkError_t sfDevVEML7700::updateConfiguration(sfDevVEML7700Config_t &config)
     if (_theBus == nullptr)
         return ksfTkErrBusNotInit; // Not initialized
 
-    return  _theBus->readRegister((VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->readRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 //--------------------------------------------------------------------------------------------------
-sfTkError_t sfDevVEML7700::begin(sfTkIBus *theBus))
+sfTkError_t sfDevVEML7700::begin(sfTkIBus *theBus)
 {
 
     // Nullptr check
@@ -91,7 +92,7 @@ sfTkError_t sfDevVEML7700::begin(sfTkIBus *theBus))
 bool sfDevVEML7700::isConnected(void)
 {
     sfDevVEML7700Config_t config;
-    return updateConfiguration(config) == ksfTkErrSuccess;
+    return updateConfiguration(config) == ksfTkErrOk;
 }
 
 /**************************************************************************/
@@ -110,12 +111,12 @@ sfTkError_t sfDevVEML7700::setShutdown(bool shutdown)
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return rc; // Error reading the configuration register
 
     config.CONFIG_REG_SD = shutdown ? VEML7700_SHUT_DOWN : VEML7700_POWER_ON;
 
-    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -129,10 +130,10 @@ bool sfDevVEML7700::isShutdown(void)
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return true; // Error reading the configuration register
 
-    return (((VEML7700_shutdown_t)_configurationRegister.CONFIG_REG_SD) == VEML7700_SHUT_DOWN);
+    return (((VEML7700_shutdown_t)config.CONFIG_REG_SD) == VEML7700_SHUT_DOWN);
 }
 
 /**************************************************************************/
@@ -151,12 +152,12 @@ sfTkError_t sfDevVEML7700::enableInterrupt(bool bEnable)
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return rc; // Error reading the configuration register
 
     config.CONFIG_REG_INT_EN = (VEML7700_t)bEnable;
 
-    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -173,7 +174,7 @@ bool sfDevVEML7700::interruptEnabled(void)
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return false; // Error reading the configuration register
 
     return config.CONFIG_REG_INT_EN == VEML7700_INT_ENABLE;
@@ -199,11 +200,11 @@ sfTkError_t sfDevVEML7700::setPersistenceProtect(VEML7700_persistence_protect_t 
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return rc; // Error reading the configuration register
 
     config.CONFIG_REG_PERS = (VEML7700_t)pp;
-    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -219,7 +220,7 @@ VEML7700_persistence_protect_t sfDevVEML7700::persistenceProtect(void)
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return VEML7700_PERSISTENCE_INVALID; // Error reading the configuration register
 
     return (VEML7700_persistence_protect_t)config.CONFIG_REG_PERS;
@@ -265,11 +266,11 @@ sfTkError_t sfDevVEML7700::setIntegrationTime(VEML7700_integration_time_t it)
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return rc; // Error reading the configuration register
 
     config.CONFIG_REG_IT = (VEML7700_t)integrationTimeConfig(it);
-    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -291,7 +292,7 @@ VEML7700_integration_time_t sfDevVEML7700::integrationTime(void)
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return VEML7700_INTEGRATION_INVALID; // Error reading the configuration register
 
     return ((VEML7700_integration_time_t)integrationTimeFromConfig(
@@ -333,11 +334,11 @@ sfTkError_t sfDevVEML7700::setSensitivityMode(VEML7700_sensitivity_mode_t sm)
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return rc; // Error reading the configuration register
 
     config.CONFIG_REG_SM = (VEML7700_t)sm;
-    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 /**************************************************************************/
@@ -357,7 +358,7 @@ VEML7700_sensitivity_mode_t sfDevVEML7700::sensitivityMode()
     sfDevVEML7700Config_t config;
     sfTkError_t rc = updateConfiguration(config);
 
-    if (rc != ksfTkErrSuccess)
+    if (rc != ksfTkErrOk)
         return VEML7700_SENSITIVITY_INVALID; // Error reading the configuration register
 
     return ((VEML7700_sensitivity_mode_t)config.CONFIG_REG_SM);
@@ -370,11 +371,10 @@ VEML7700_sensitivity_mode_t sfDevVEML7700::sensitivityMode()
 /**************************************************************************/
 const char *sfDevVEML7700::sensitivityModeString()
 {
-    VEML7700_sensitivity_mode_t sm = sensitivityMode()
+    VEML7700_sensitivity_mode_t sm = sensitivityMode();
 
-        if (sm < VEML7700_SENSITIVITY_x1 ||
-            sm >= VEML7700_SENSITIVITY_INVALID) return "INVALID"; // Invalid sensitivity mode setting
-    getSensitivityMode(&sm);
+    if (sm < VEML7700_SENSITIVITY_x1 || sm >= VEML7700_SENSITIVITY_INVALID)
+        return "INVALID"; // Invalid sensitivity mode setting
 
     return kVEML7700GainSettingsString[sm];
 }
@@ -389,7 +389,7 @@ const char *sfDevVEML7700::sensitivityModeString()
 /**************************************************************************/
 sfTkError_t sfDevVEML7700::setHighThreshold(uint16_t threshold)
 {
-    return theBus->writeRegister(VEML7700_HIGH_THRESHOLD, threshold);
+    return _theBus->writeRegister(VEML7700_HIGH_THRESHOLD, threshold);
 }
 
 /**************************************************************************/
@@ -401,9 +401,9 @@ sfTkError_t sfDevVEML7700::setHighThreshold(uint16_t threshold)
 uint16_t sfDevVEML7700::highThreshold(void)
 {
     uint16_t threshold;
-    sfTkError_t rc =_theBus->readRegister((VEML7700_HIGH_THRESHOLD, threshold);
-    
-    return rc == ksfTkErrSuccess ? threshold : kVEML7700ValueError; // Return 0xFFFF on error
+    sfTkError_t rc = _theBus->readRegister(VEML7700_HIGH_THRESHOLD, threshold);
+
+    return rc == ksfTkErrOk ? threshold : kVEML7700ValueError; // Return 0xFFFF on error
 }
 
 /**************************************************************************/
@@ -416,7 +416,7 @@ uint16_t sfDevVEML7700::highThreshold(void)
 /**************************************************************************/
 sfTkError_t sfDevVEML7700::setLowThreshold(uint16_t threshold)
 {
-    return theBus->writeRegister(VEML7700_LOW_THRESHOLD, threshold);
+    return _theBus->writeRegister(VEML7700_LOW_THRESHOLD, threshold);
 }
 
 /**************************************************************************/
@@ -428,9 +428,9 @@ sfTkError_t sfDevVEML7700::setLowThreshold(uint16_t threshold)
 uint16_t sfDevVEML7700::lowThreshold(void)
 {
     uint16_t threshold;
-    sfTkError_t rc =_theBus->readRegister((VEML7700_LOW_THRESHOLD, threshold);
-    
-    return rc == ksfTkErrSuccess ? threshold : kVEML7700ValueError; // Return 0xFFFF on error
+    sfTkError_t rc = _theBus->readRegister(VEML7700_LOW_THRESHOLD, threshold);
+
+    return rc == ksfTkErrOk ? threshold : kVEML7700ValueError; // Return 0xFFFF on error
 }
 
 /**************************************************************************/
@@ -443,9 +443,9 @@ uint16_t sfDevVEML7700::readAmbientLight(void)
 {
 
     uint16_t ambient;
-    sfTkError_t rc =_theBus->readRegister((VEML7700_ALS_OUTPUT, ambient);
-    
-    return rc == ksfTkErrSuccess ? ambient : kVEML7700ValueError;
+    sfTkError_t rc = _theBus->readRegister(VEML7700_ALS_OUTPUT, ambient);
+
+    return rc == ksfTkErrOk ? ambient : kVEML7700ValueError;
 }
 
 /**************************************************************************/
@@ -457,9 +457,9 @@ uint16_t sfDevVEML7700::readAmbientLight(void)
 uint16_t sfDevVEML7700::readWhiteLevel(void)
 {
     uint16_t whiteLevel;
-    sfTkError_t rc =_theBus->readRegister((VEML7700_WHITE_OUTPUT, whiteLevel);
-    
-    return rc == ksfTkErrSuccess ? whiteLevel : kVEML7700ValueError;
+    sfTkError_t rc = _theBus->readRegister(VEML7700_WHITE_OUTPUT, whiteLevel);
+
+    return rc == ksfTkErrOk ? whiteLevel : kVEML7700ValueError;
 }
 
 /**************************************************************************/
@@ -479,18 +479,29 @@ float sfDevVEML7700::readLux(void)
     VEML7700_sensitivity_mode_t senseMode = sensitivityMode();
 
     if (senseMode == VEML7700_SENSITIVITY_INVALID)
+    {
+        Serial.println("Invalid sensitivity mode");
         return 0.0;
+    }
 
     VEML7700_integration_time_t intTime = integrationTime();
 
     if (intTime == VEML7700_INTEGRATION_INVALID)
+    {
+        Serial.println("Invalid integration time");
         return 0.0;
+    }
 
     /** Now we read the ambient level and multiply it by the resolution */
-    uint16_t ambient = ambientLight();
+    uint16_t ambient = readAmbientLight();
 
     if (ambient == kVEML7700ValueError)
+    {
+        Serial.println("Error reading ambient light");
         return 0.0;
+    }
+    Serial.printf("sends: %d, intTime: %d, factor: %f, ambient: %d\n", senseMode, intTime,
+                  VEML7700_LUX_RESOLUTION[senseMode][intTime], ambient);
 
     // Apply the resolution to the ambient light reading
     return (float)ambient * VEML7700_LUX_RESOLUTION[senseMode][intTime];
@@ -515,24 +526,24 @@ float sfDevVEML7700::readLux(void)
 /**************************************************************************/
 VEML7700_interrupt_status_t sfDevVEML7700::interruptStatus(void)
 {
-    VEML7700_error_t err;
+
     VEML7700_INTERRUPT_STATUS_REGISTER_t isr;
 
     uint16_t ambient;
-    sfTkError_t rc =_theBus->readRegister((VEML7700_INTERRUPT_STATUS, isr.all);
+    sfTkError_t rc = _theBus->readRegister(VEML7700_INTERRUPT_STATUS, isr.all);
 
-    return rc != ksfTkErrSuccess ? VEML7700_INT_STATUS_INVALID : (VEML7700_interrupt_status_t)isr.INT_STATUS_REG_INT_FLAGS;
+    return rc != ksfTkErrOk ? VEML7700_INT_STATUS_INVALID : (VEML7700_interrupt_status_t)isr.INT_STATUS_REG_INT_FLAGS;
 }
 
 sfDevVEML7700::VEML7700_config_integration_time_t sfDevVEML7700::integrationTimeConfig(VEML7700_integration_time_t it)
 {
     // since the value of integration time is defined in a simple sequential order, and the intput is typed,
     // just use a translation table.
-    VEML7700_config_integration_time_t table[] = {VEML7700_CONFIG_INTEGRATION_25ms,   VEML7700_CONFIG_INTEGRATION_50ms,
-                                                  VEML7700_CONFIG_INTEGRATION_100ms,  VEML7700_CONFIG_INTEGRATION_200ms,
-                                                  VEML7700_CONFIG_INTEGRATION_400ms,  VEML7700_CONFIG_INTEGRATION_800ms];
+    VEML7700_config_integration_time_t table[] = {VEML7700_CONFIG_INTEGRATION_25ms,  VEML7700_CONFIG_INTEGRATION_50ms,
+                                                  VEML7700_CONFIG_INTEGRATION_100ms, VEML7700_CONFIG_INTEGRATION_200ms,
+                                                  VEML7700_CONFIG_INTEGRATION_400ms, VEML7700_CONFIG_INTEGRATION_800ms};
 
-    return tt < VEML7700_INTEGRATION_INVALID ? table[tt] : VEML7700_CONFIG_INTEGRATION_INVALID;
+    return it < VEML7700_INTEGRATION_INVALID ? table[it] : VEML7700_CONFIG_INTEGRATION_INVALID;
 }
 
 VEML7700_integration_time_t sfDevVEML7700::integrationTimeFromConfig(
