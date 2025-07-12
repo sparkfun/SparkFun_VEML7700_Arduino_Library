@@ -22,6 +22,17 @@
 #include "sfTk/sfDevVEML7700.h"
 // clang-format on
 
+// For backwards compatibility - with the SparkX (v1.0.0) library, remap error codes
+// to the toolkit error codes
+typedef enum : sfTkError_t
+{
+    VEML7700_ERROR_READ = ksfTkErrFail,
+    VEML7700_ERROR_WRITE = ksfTkErrFail,
+    VEML7700_ERROR_INVALID_ADDRESS = ksfTkErrInvalidParam,
+    VEML7700_ERROR_UNDEFINED = ksfTkErrInvalidParam,
+    VEML7700_ERROR_SUCCESS = ksfTkErrOk
+} VEML7700_error_t;
+const VEML7700_error_t VEML7700_SUCCESS = VEML7700_ERROR_SUCCESS;
 /**
  * @brief Class for interfacing with the VMEL7700 sensor using I2C communication
  *
@@ -57,4 +68,9 @@ class SparkFunVEML7700 : public sfDevVEML7700
 
   private:
     sfTkArdI2C _theI2CBus;
+};
+
+// for backwards compatibility
+class VEML7700 : public SparkFunVEML7700
+{
 };

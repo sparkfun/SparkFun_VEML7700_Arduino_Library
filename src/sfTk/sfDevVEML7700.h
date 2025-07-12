@@ -189,12 +189,13 @@ class sfDevVEML7700
      * @return sfTkError_t Error code indicating success or failure of the operation.
      */
     sfTkError_t enableInterrupt(bool);
+
     /**
      * @brief Checks if the interrupt feature is enabled on the VEML7700 device.
      *
      * @return true if the interrupt is enabled, false otherwise.
      */
-    bool interruptEnabled(void);
+    bool isInterruptEnabled(void);
 
     /**
      * @brief Sets the persistence protection mode for the VEML7700 sensor.
@@ -244,6 +245,17 @@ class sfDevVEML7700
     const char *persistenceProtectString(void);
 
     /**
+     * @brief Get the Persistence Protect object - this is for backward compatibility.
+     *
+     * @deprecated since version 2.0.0, use persistenceProtect() instead.
+     * @return VEML7700_persistence_protect_t
+     */
+    const char *getPersistenceProtectStr(void)
+    {
+        return persistenceProtectString();
+    }
+
+    /**
      * @brief Sets the integration time for the VEML7700 sensor.
      *
      * This function configures the integration time, which determines the duration
@@ -276,6 +288,17 @@ class sfDevVEML7700
     VEML7700_integration_time_t integrationTime(void);
 
     /**
+     * @brief Get the Integration Time object -  this is for backward compatibility.
+     *
+     * @deprecated since version 2.0.0, use integrationTime() instead.
+     * @return VEML7700_integration_time_t
+     */
+
+    VEML7700_integration_time_t getIntegrationTime(void)
+    {
+        return integrationTime();
+    }
+    /**
      * @brief Returns a string representation of the current integration time setting.
      *
      * This function provides a human-readable string that describes the current integration time.
@@ -283,6 +306,17 @@ class sfDevVEML7700
      * @return const char* A string representing the integration time setting.
      */
     const char *integrationTimeString(void);
+
+    /**
+     * @brief Get the Integration Time string - this is for backward compatibility.
+     *
+     * @deprecated since version 2.0.0, use integrationTimeString() instead.
+     * @return const char* A string representing the integration time setting.
+     */
+    const char *getIntegrationTimeStr(void)
+    {
+        return integrationTimeString();
+    }
 
     /**
      * @brief Sets the sensitivity mode for the VEML7700 sensor.
@@ -316,6 +350,17 @@ class sfDevVEML7700
     VEML7700_sensitivity_mode_t sensitivityMode(void);
 
     /**
+     * @brief Get the Sensitivity Mode object - this is for backward compatibility.
+     *
+     * @deprecated since version 2.0.0, use sensitivityMode() instead.
+     * @return VEML7700_sensitivity_mode_t
+     */
+    VEML7700_sensitivity_mode_t getSensitivityMode(void)
+    {
+        return sensitivityMode();
+    }
+
+    /**
      * @brief Returns a string representation of the current sensitivity mode setting.
      *
      * This function provides a human-readable string that describes the current sensitivity mode.
@@ -323,6 +368,17 @@ class sfDevVEML7700
      * @return const char* A string representing the sensitivity mode setting.
      */
     const char *sensitivityModeString(void);
+
+    /**
+     * @brief Get the Sensitivity Mode string - this is for backward compatibility.
+     *
+     * @deprecated since version 2.0.0, use sensitivityModeString() instead.
+     * @return const char* A string representing the sensitivity mode setting.
+     */
+    const char *getSensitivityModeStr(void)
+    {
+        return sensitivityModeString();
+    }
 
     /**
      * @brief Sets the high threshold value for the VEML7700 sensor.
@@ -355,6 +411,17 @@ class sfDevVEML7700
     uint16_t highThreshold(void);
 
     /**
+     * @brief Get the High Threshold object - this is for backward compatibility.
+     *
+     * @deprecated since version 2.0.0, use highThreshold() instead.
+     * @return uint16_t The current high threshold value (16-bit unsigned integer): 0x0000 to 0xFFFF
+     */
+    uint16_t getHighThreshold(void)
+    {
+        return highThreshold();
+    }
+
+    /**
      * @brief Sets the low threshold value for the VEML7700 sensor.
      *
      * This function configures the sensor to trigger an interrupt or event when the measured value
@@ -383,6 +450,17 @@ class sfDevVEML7700
      * @return uint16_t The current low threshold value (16-bit unsigned integer): 0x0000 to 0xFFFF
      */
     uint16_t lowThreshold(void);
+
+    /**
+     * @brief Get the Low Threshold object - this is for backward compatibility.
+     *
+     * @deprecated since version 2.0.0, use lowThreshold() instead.
+     * @return uint16_t The current low threshold value (16-bit unsigned integer): 0x0000 to 0xFFFF
+     */
+    uint16_t getLowThreshold(void)
+    {
+        return lowThreshold();
+    } // Get the Low Threshold object - this is for backward compatibility
 
     /** Read the sensor data */
 

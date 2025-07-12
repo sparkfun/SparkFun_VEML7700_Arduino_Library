@@ -205,7 +205,7 @@ sfTkError_t sfDevVEML7700::enableInterrupt(bool bEnable)
 // Get the interrupt enable setting.
 //
 
-bool sfDevVEML7700::interruptEnabled(void)
+bool sfDevVEML7700::isInterruptEnabled(void)
 {
 
     sfDevVEML7700Config_t config;
