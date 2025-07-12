@@ -42,6 +42,6 @@ void setup()
 
 void loop()
 {
-    Serial.println(mySensor.readLux(), 4); // Read the lux from the sensor and print it
+    Serial.println(mySensor.getLux(), 4); // Read the lux from the sensor and print it
     delay(250);
 }
