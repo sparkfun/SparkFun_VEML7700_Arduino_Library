@@ -47,6 +47,7 @@ class SparkFunVEML7700 : public sfDevVEML7700
     {
         // Setup Arduino I2C bus
         _theI2CBus.init(wirePort, address);
+        _theI2CBus.setStop(false);
 
         // Begin the sensor
         sfTkError_t rc = sfDevVEML7700::begin(&_theI2CBus);
