@@ -8,7 +8,7 @@
  * @author SparkFUn Electronics
  * @date 2021-2025
  * @version 2.0.0
- * @copyright (c) 2021=2025 SparkFun Electronics Inc. This project is released under the MIT License.
+ * @copyright (c) 2021-2025 SparkFun Electronics Inc. This project is released under the MIT License.
  *
  * SPDX-License-Identifier: MIT
  *
@@ -47,7 +47,7 @@ class SparkFunVEML7700 : public sfDevVEML7700
     {
         // Setup Arduino I2C bus
         _theI2CBus.init(wirePort, address);
-        _theI2CBus.setStop(false);
+        _theI2CBus.setStop(false); // Do not send a stop condition after each read/write
 
         // Begin the sensor
         sfTkError_t rc = sfDevVEML7700::begin(&_theI2CBus);
