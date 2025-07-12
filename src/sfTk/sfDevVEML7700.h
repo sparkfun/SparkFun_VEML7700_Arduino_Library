@@ -536,6 +536,17 @@ class sfDevVEML7700
      */
     VEML7700_interrupt_status_t interruptStatus(void);
 
+    /**
+     * @brief Gets the interrupt status of the VEML7700 sensor.
+     *
+     * @deprecated since version 2.0.0, use interruptStatus() instead.
+     * @return VEML7700_interrupt_status_t The current interrupt status of the sensor.
+     */
+    VEML7700_interrupt_status_t getInterruptStatus(void)
+    {
+        return interruptStatus();
+    } // Get the Interrupt Status object - this is for backward compatibility
+
   private:
     /** Provide bit field access to the configuration register */
     typedef struct
