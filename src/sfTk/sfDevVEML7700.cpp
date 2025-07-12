@@ -479,29 +479,18 @@ float sfDevVEML7700::readLux(void)
     VEML7700_sensitivity_mode_t senseMode = sensitivityMode();
 
     if (senseMode == VEML7700_SENSITIVITY_INVALID)
-    {
-        Serial.println("Invalid sensitivity mode");
         return 0.0;
-    }
 
     VEML7700_integration_time_t intTime = integrationTime();
 
     if (intTime == VEML7700_INTEGRATION_INVALID)
-    {
-        Serial.println("Invalid integration time");
         return 0.0;
-    }
 
     /** Now we read the ambient level and multiply it by the resolution */
     uint16_t ambient = readAmbientLight();
 
     if (ambient == kVEML7700ValueError)
-    {
-        Serial.println("Error reading ambient light");
         return 0.0;
-    }
-    Serial.printf("sends: %d, intTime: %d, factor: %f, ambient: %d\n", senseMode, intTime,
-                  VEML7700_LUX_RESOLUTION[senseMode][intTime], ambient);
 
     // Apply the resolution to the ambient light reading
     return (float)ambient * VEML7700_LUX_RESOLUTION[senseMode][intTime];
@@ -529,7 +518,6 @@ VEML7700_interrupt_status_t sfDevVEML7700::interruptStatus(void)
 
     VEML7700_INTERRUPT_STATUS_REGISTER_t isr;
 
-    uint16_t ambient;
     sfTkError_t rc = _theBus->readRegister(VEML7700_INTERRUPT_STATUS, isr.all);
 
     return rc != ksfTkErrOk ? VEML7700_INT_STATUS_INVALID : (VEML7700_interrupt_status_t)isr.INT_STATUS_REG_INT_FLAGS;
