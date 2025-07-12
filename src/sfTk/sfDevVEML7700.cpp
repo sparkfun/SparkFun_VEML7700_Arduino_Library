@@ -424,7 +424,7 @@ uint16_t sfDevVEML7700::highThreshold(void)
 //
 sfTkError_t sfDevVEML7700::setLowThreshold(uint16_t threshold)
 {
-    return _theBus->writeRegister(uint8_t)(VEML7700_LOW_THRESHOLD, threshold);
+    return _theBus->writeRegister((uint8_t)VEML7700_LOW_THRESHOLD, threshold);
 }
 
 //---------------------------------------------------------------------------------------------------
