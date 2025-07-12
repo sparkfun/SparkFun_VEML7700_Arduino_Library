@@ -116,7 +116,7 @@ sfTkError_t sfDevVEML7700::updateConfiguration(sfDevVEML7700Config_t &config)
     if (_theBus == nullptr)
         return ksfTkErrBusNotInit; // Not initialized
 
-    return _theBus->readRegister((uint8_t)VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->readRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 //--------------------------------------------------------------------------------------------------
 // Begin the VEML7700 device. Requires a bus object to communicate with the device.
@@ -141,7 +141,7 @@ sfTkError_t sfDevVEML7700::begin(sfTkIBus *theBus)
     configurationRegister.CONFIG_REG_IT = (VEML7700_t)integrationTimeConfig(VEML7700_INTEGRATION_100ms);
     configurationRegister.CONFIG_REG_SM = VEML7700_SENSITIVITY_x1;
 
-    return theBus->writeRegister((uint8_t)VEML7700_CONFIGURATION_REGISTER, configurationRegister.all);
+    return theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, configurationRegister.all);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -167,7 +167,7 @@ sfTkError_t sfDevVEML7700::setShutdown(bool shutdown)
 
     config.CONFIG_REG_SD = shutdown ? VEML7700_SHUT_DOWN : VEML7700_POWER_ON;
 
-    return _theBus->writeRegister((uint8_t)VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -199,7 +199,7 @@ sfTkError_t sfDevVEML7700::enableInterrupt(bool bEnable)
 
     config.CONFIG_REG_INT_EN = (VEML7700_t)bEnable;
 
-    return _theBus->writeRegister((uint8_t)VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 //--------------------------------------------------------------------------------------------------
 // Get the interrupt enable setting.
@@ -233,7 +233,7 @@ sfTkError_t sfDevVEML7700::setPersistenceProtect(VEML7700_persistence_protect_t 
         return rc; // Error reading the configuration register
 
     config.CONFIG_REG_PERS = (VEML7700_t)pp;
-    return _theBus->writeRegister((uint8_t)VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 //--------------------------------------------------------------------------------------------------
 // Get the VEML7700's Persistence Protect Number setting
@@ -291,7 +291,7 @@ sfTkError_t sfDevVEML7700::setIntegrationTime(VEML7700_integration_time_t it)
         return rc; // Error reading the configuration register
 
     config.CONFIG_REG_IT = (VEML7700_t)integrationTimeConfig(it);
-    return _theBus->writeRegister((uint8_t)VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ sfTkError_t sfDevVEML7700::setSensitivityMode(VEML7700_sensitivity_mode_t sm)
         return rc; // Error reading the configuration register
 
     config.CONFIG_REG_SM = (VEML7700_t)sm;
-    return _theBus->writeRegister((uint8_t)VEML7700_CONFIGURATION_REGISTER, config.all);
+    return _theBus->writeRegister(VEML7700_CONFIGURATION_REGISTER, config.all);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -397,7 +397,7 @@ const char *sfDevVEML7700::sensitivityModeString()
 //
 sfTkError_t sfDevVEML7700::setHighThreshold(uint16_t threshold)
 {
-    return _theBus->writeRegister((uint8_t)VEML7700_HIGH_THRESHOLD, threshold);
+    return _theBus->writeRegister(VEML7700_HIGH_THRESHOLD, threshold);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -406,7 +406,7 @@ sfTkError_t sfDevVEML7700::setHighThreshold(uint16_t threshold)
 
 sfTkError_t sfDevVEML7700::getHighThreshold(uint16_t &threshold)
 {
-    return _theBus->readRegister((uint8_t)VEML7700_HIGH_THRESHOLD, threshold);
+    return _theBus->readRegister(VEML7700_HIGH_THRESHOLD, threshold);
 }
 //--------------------------------------------------------------------------------------------------
 // Get the VEML7700's ALS high threshold window setting (ALS_WH)
@@ -424,7 +424,7 @@ uint16_t sfDevVEML7700::highThreshold(void)
 //
 sfTkError_t sfDevVEML7700::setLowThreshold(uint16_t threshold)
 {
-    return _theBus->writeRegister((uint8_t)VEML7700_LOW_THRESHOLD, threshold);
+    return _theBus->writeRegister(VEML7700_LOW_THRESHOLD, threshold);
 }
 
 //---------------------------------------------------------------------------------------------------
@@ -432,7 +432,7 @@ sfTkError_t sfDevVEML7700::setLowThreshold(uint16_t threshold)
 //
 sfTkError_t sfDevVEML7700::getLowThreshold(uint16_t &threshold)
 {
-    return _theBus->readRegister((uint8_t)VEML7700_LOW_THRESHOLD, threshold);
+    return _theBus->readRegister(VEML7700_LOW_THRESHOLD, threshold);
 }
 
 //---------------------------------------------------------------------------------------------------
@@ -451,7 +451,7 @@ uint16_t sfDevVEML7700::lowThreshold(void)
 //
 sfTkError_t sfDevVEML7700::getAmbientLight(uint16_t &ambient)
 {
-    return _theBus->readRegister((uint8_t)VEML7700_ALS_OUTPUT, ambient);
+    return _theBus->readRegister(VEML7700_ALS_OUTPUT, ambient);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -471,7 +471,7 @@ uint16_t sfDevVEML7700::getAmbientLight(void)
 //
 sfTkError_t sfDevVEML7700::getWhiteLevel(uint16_t &whiteLevel)
 {
-    return _theBus->readRegister((uint8_t)VEML7700_WHITE_OUTPUT, whiteLevel);
+    return _theBus->readRegister(VEML7700_WHITE_OUTPUT, whiteLevel);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -546,7 +546,7 @@ VEML7700_interrupt_status_t sfDevVEML7700::interruptStatus(void)
 {
     VEML7700_INTERRUPT_STATUS_REGISTER_t isr;
 
-    sfTkError_t rc = _theBus->readRegister((uint8_t)VEML7700_INTERRUPT_STATUS, isr.all);
+    sfTkError_t rc = _theBus->readRegister(VEML7700_INTERRUPT_STATUS, isr.all);
 
     return rc != ksfTkErrOk ? VEML7700_INT_STATUS_INVALID : (VEML7700_interrupt_status_t)isr.INT_STATUS_REG_INT_FLAGS;
 }

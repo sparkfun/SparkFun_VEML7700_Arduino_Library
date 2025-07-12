@@ -585,15 +585,13 @@ class sfDevVEML7700
     } VEML7700_INTERRUPT_STATUS_REGISTER_t;
 
     // VEML7700 Registers - note types are uint8_t to match the I2C register size
-    typedef enum : uint8_t
-    {
-        VEML7700_CONFIGURATION_REGISTER,
-        VEML7700_HIGH_THRESHOLD,
-        VEML7700_LOW_THRESHOLD,
-        VEML7700_ALS_OUTPUT = 4,
-        VEML7700_WHITE_OUTPUT,
-        VEML7700_INTERRUPT_STATUS
-    } VEML7700_registers_t;
+
+    static constexpr uint8_t VEML7700_CONFIGURATION_REGISTER = 0;
+    static constexpr uint8_t VEML7700_HIGH_THRESHOLD = 1;
+    static constexpr uint8_t VEML7700_LOW_THRESHOLD = 2;
+    static constexpr uint8_t VEML7700_ALS_OUTPUT = 4;
+    static constexpr uint8_t VEML7700_WHITE_OUTPUT = 5;
+    static constexpr uint8_t VEML7700_INTERRUPT_STATUS = 6;
 
     // ALS integration time setting
     typedef enum
