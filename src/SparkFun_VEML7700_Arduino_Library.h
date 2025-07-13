@@ -71,6 +71,11 @@ class SparkFunVEML7700 : public sfDevVEML7700
 };
 
 // for backwards compatibility
+/**
+ * @brief Deprecated class for interfacing with the VEML7700 sensor - supports version 1.0.0 of the SparkX library
+ *
+ * @deprecated This class is deprecated for version 2.0 of this library. Use SparkFunVEML7700 instead.
+ */
 class VEML7700 : public SparkFunVEML7700
 {
 };
