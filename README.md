@@ -2,7 +2,7 @@
 
 # SparkFun Ambient Light Sensor - VEML7700 Arduino Library
 
-SparkFun Ambient Light Sensor - VEML7700 - AS7343 (QWIIC)
+SparkFun Ambient Light Sensor - VEML7700 (QWIIC)
 
 ![License](https://img.shields.io/github/license/sparkfun/SparkFun_VEML7700_Arduino_Library)
 ![Release](https://img.shields.io/github/v/release/sparkfun/SparkFun_VEML7700_Arduino_Library)
