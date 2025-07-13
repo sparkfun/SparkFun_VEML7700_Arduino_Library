@@ -43,11 +43,11 @@ The following examples are provided with the library
 
 | Example | Description |
 |---|---|
-|[Read LUX Value](examples/Example1_getLux/Example1_getLux.ino)| Take basic readings from the sensor - read the currently detect LUX value.|
-|[Change Settings](examples/Example2_changeSettings/Example2_changeSettings.ino)| Change the operational settings of the sensor|
-|[Threshold Settings](examples/Example3_threshold/Example3_threshold.ino)| Set threshold values and check for threshold triggered interrupts.|
-|[Power Settomgs](examples/Example4_shutDown/Example4_shutDown.ino)| Shows how to shutdown and power up the sensor.|
-|[Production Test](examples/Example5_ProductionTest/Example5_ProductionTest.ino)| Test used during board production |
+|[Read LUX Value](https://github.com/sparkfun/SparkFun_VEML7700_Arduino_Library/blob/main/examples/Example1_getLux/Example1_getLux.ino)| Take basic readings from the sensor - read the currently detect LUX value.|
+|[Change Settings](https://github.com/sparkfun/SparkFun_VEML7700_Arduino_Library/blob/main/examples/Example2_changeSettings/Example2_changeSettings.ino)| Change the operational settings of the sensor|
+|[Threshold Settings](https://github.com/sparkfun/SparkFun_VEML7700_Arduino_Library/blob/main/examples/Example3_threshold/Example3_threshold.ino)| Set threshold values and check for threshold triggered interrupts.|
+|[Power Settomgs](https://github.com/sparkfun/SparkFun_VEML7700_Arduino_Library/blob/main/examples/Example4_shutDown/Example4_shutDown.ino)| Shows how to shutdown and power up the sensor.|
+|[Production Test](https://github.com/sparkfun/SparkFun_VEML7700_Arduino_Library/blob/main/examples/Example5_ProductionTest/Example5_ProductionTest.ino)| Test used during board production |
 
 
 
