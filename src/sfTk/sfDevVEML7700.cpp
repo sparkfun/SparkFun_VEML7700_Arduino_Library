@@ -1,9 +1,6 @@
 /*!
  * @file sfDevVEML7700.cpp
  *
- * @mainpage SparkFun VEML7700 Ambient Light Sensor Arduino Library
- *
- * @section intro_sec Introduction
  *
  * This library facilitates communication with the VEML7700 over I<sup>2</sup>C.
  *
