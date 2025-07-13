@@ -14,6 +14,11 @@ SparkFun Ambient Light Sensor - VEML7700 - AS7343 (QWIIC)
 
 This library provides full access to the functions of the VEML7700 Ambient Light Sensor through an I2C connection using the SparkFun Qwiic connectors and cables. 
 
+> [!NOTE]
+> Version 2.0 and above of this library is not completely backward compatable with the original version 1.0 SparkX version. 
+>
+> Most operations will work, but the data types for `shutdown` and methods used `interrupts` has changed to simplify the API. See the online documentation and examples for further information.
+
 ### Supported Products
 This library is intended for use with the following SparkFun Product - available at [www.sparkfun.com](https://www.sparkfun.com). 
 
