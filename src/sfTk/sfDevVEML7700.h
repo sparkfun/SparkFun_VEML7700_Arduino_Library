@@ -235,6 +235,18 @@ class sfDevVEML7700
      * @return VEML7700_persistence_protect_t The current persistence protection setting.
      */
     VEML7700_persistence_protect_t persistenceProtect(void);
+
+    /**
+     * @brief Get the Persistence Protect object - this is for backward compatibility.
+     *
+     * @deprecated since version 2.0.0, use persistenceProtect() instead.
+     * @return VEML7700_persistence_protect_t
+     */
+    VEML7700_persistence_protect_t getPersistenceProtect(void)
+    {
+        return persistenceProtect();
+    }
+
     /**
      * @brief Returns a string representation of the current persistence protection setting.
      *
